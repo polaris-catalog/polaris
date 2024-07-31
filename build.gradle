@@ -52,7 +52,7 @@ subprojects {
     apply plugin: "groovy"
     ext {
         jacksonVersion = "2.17.2"
-        icebergVersion = "1.5.0"
+        icebergVersion = "1.6.0"
         hadoopVersion = "3.3.6"
         dropwizardVersion = "4.0.7"
         assertJVersion = "3.25.3"
