@@ -187,9 +187,10 @@ $ curl -i -X POST -H "Authorization: Bearer $PRINCIPAL_TOKEN" -H 'Accept: applic
   -d '{"name": "polaris", "id": 100, "type": "INTERNAL", "readOnly": false, "storageConfigInfo": {"storageType": "FILE"}, "properties": {"default-base-location": "file:///tmp/polaris"}}'
 ```
 
-This creates a catalog called `polaris`. From here, you can use Spark to create namespaces, tables, etc.
+This creates a catalog called `polaris`. From here, you can use any Iceberg REST
+compatible clients (e.g. Spark or Trino) to create namespaces, tables, etc.
 
-You must run the following as the first query in your spark-sql shell to actually use Polaris:
+You must run the following as the first query in your SQL shell to actually use Polaris:
 
 ```
 use polaris;
