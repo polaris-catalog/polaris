@@ -16,6 +16,7 @@
 package io.polaris.extension.persistence.impl.eclipselink;
 
 import io.polaris.core.PolarisDiagnostics;
+import io.polaris.core.PolarisUtils;
 import io.polaris.core.entity.PolarisBaseEntity;
 import io.polaris.core.entity.PolarisEntitiesActiveKey;
 import io.polaris.core.entity.PolarisEntityActiveRecord;
@@ -34,7 +35,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -408,5 +412,59 @@ public class PolarisEclipseLinkStore {
     diagnosticServices.check(modelPrincipalSecrets != null, "principal_secretes_not_found");
 
     session.remove(modelPrincipalSecrets);
+  }
+
+  boolean locationOverlapsWithExistingTableLike(EntityManager session, String location) {
+    if (location == null) {
+      return false;
+    }
+    diagnosticServices.check(session != null, "session_is_null");
+
+    List<String> directoryList = new ArrayList<>();
+    String queryString = """
+        SELECT
+            location
+        FROM
+            ModelEntityActive
+        WHERE
+            location IS NOT NULL
+            AND typeCode = :table_code
+            AND (
+                location LIKE CONCAT(:location, '%')
+                OR :location LIKE CONCAT(location, '%')
+            )
+    """;
+
+    int MAX_DIRECTORIES_IN_QUERY = 32;
+    Optional<List<String>> directories = PolarisUtils.pathToDirectories(location, MAX_DIRECTORIES_IN_QUERY);
+    if (directories.isPresent()) {
+      directoryList = directories.get();
+      queryString = IntStream.range(0, directoryList.size())
+          .mapToObj(i ->
+              "SELECT location " +
+              "FROM ModelEntityActive " +
+              "WHERE location IS NOT NULL " +
+              "AND typeCode = :table_code " +
+              "AND location = :directory_" + i
+          )
+          .collect(Collectors.joining(" UNION ALL "));
+
+      queryString += " UNION ALL " +
+                     "SELECT location " +
+                     "FROM ModelEntityActive " +
+                     "WHERE location IS NOT NULL " +
+                     "AND typeCode = :table_code " +
+                     "AND location LIKE :locationPrefix";
+    }
+
+    TypedQuery<String> query = session.createQuery(queryString, String.class)
+        .setParameter("table_code", PolarisEntityType.TABLE_LIKE.getCode())
+        .setParameter("locationPrefix", location + "%");
+
+    for (int i = 0; i < directoryList.size(); i++) {
+      query.setParameter("directory_" + i, directoryList.get(i));
+    }
+
+    return query.getResultStream().findFirst().isPresent();
   }
 }

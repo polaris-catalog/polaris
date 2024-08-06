@@ -298,7 +298,8 @@ public class PolarisTreeMapMetaStoreSessionImpl implements PolarisMetaStoreSessi
             entity.getParentId(),
             entity.getName(),
             entity.getTypeCode(),
-            entity.getSubTypeCode());
+            entity.getSubTypeCode(),
+            entity.getLocation());
   }
 
   /** {@inheritDoc} */
@@ -345,7 +346,8 @@ public class PolarisTreeMapMetaStoreSessionImpl implements PolarisMetaStoreSessi
                 entity.getParentId(),
                 entity.getName(),
                 entity.getTypeCode(),
-                entity.getSubTypeCode()));
+                entity.getSubTypeCode(),
+                entity.getLocation()));
   }
 
   @Override
@@ -564,5 +566,20 @@ public class PolarisTreeMapMetaStoreSessionImpl implements PolarisMetaStoreSessi
   @Override
   public void rollback() {
     this.store.rollback();
+  }
+
+  @Override
+  public boolean locationOverlapsWithExistingTableLike(
+      @NotNull PolarisCallContext callContext, String location) {
+    return this.store
+        .getSliceEntitiesActive()
+        .valueExists(
+            polarisBaseEntity -> {
+              return location != null
+                  && polarisBaseEntity.getLocation() != null
+                  && polarisBaseEntity.getType() == PolarisEntityType.TABLE_LIKE
+                  && (polarisBaseEntity.getLocation().startsWith(location)
+                      || location.startsWith(polarisBaseEntity.getLocation()));
+            });
   }
 }

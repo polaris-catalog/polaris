@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 
@@ -161,6 +162,16 @@ public class PolarisTreeMapStore {
 
     private void startWriteTransaction() {
       undoSlice.clear();
+    }
+
+    /** Return true if any key in this slice satisfies some predicate */
+    public boolean keyExists(Predicate<String> predicate) {
+      return slice.keySet().stream().anyMatch(predicate);
+    }
+
+    /** Return true if any value in this slice satisfies some predicate */
+    public boolean valueExists(Predicate<T> predicate) {
+      return slice.values().stream().anyMatch(predicate);
     }
   }
 

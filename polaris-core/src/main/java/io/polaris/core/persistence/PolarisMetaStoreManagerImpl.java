@@ -132,6 +132,10 @@ public class PolarisMetaStoreManagerImpl implements PolarisMetaStoreManager {
       @NotNull PolarisMetaStoreSession ms,
       @NotNull PolarisBaseEntity entity) {
 
+    if (entity.getType().getCode() == PolarisEntityType.TABLE_LIKE.getCode()) { // TODO remove
+      System.out.println("DEBUG");
+    }
+
     // validate the entity type and subtype
     callCtx.getDiagServices().checkNotNull(entity, "unexpected_null_entity");
     callCtx
@@ -1162,6 +1166,8 @@ public class PolarisMetaStoreManagerImpl implements PolarisMetaStoreManager {
       @NotNull List<? extends PolarisBaseEntity> entities) {
     // get metastore we should be using
     PolarisMetaStoreSession ms = callCtx.getMetaStore();
+
+    // TODO remove this comment
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
@@ -2409,5 +2415,13 @@ public class PolarisMetaStoreManagerImpl implements PolarisMetaStoreManager {
                 entityType,
                 entityCatalogId,
                 entityId));
+  }
+
+  public boolean locationOverlapsWithExistingTableLike(
+      @NotNull PolarisCallContext callCtx, @NotNull String location) {
+    // get metastore we should be using
+    PolarisMetaStoreSession ms = callCtx.getMetaStore();
+
+    return ms.locationOverlapsWithExistingTableLike(callCtx, location);
   }
 }

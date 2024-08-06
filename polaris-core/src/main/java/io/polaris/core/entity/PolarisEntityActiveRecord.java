@@ -38,6 +38,9 @@ public class PolarisEntityActiveRecord {
   // code representing the subtype of that entity
   private final int subTypeCode;
 
+  // location of the entity where applicable
+  private final String location;
+
   public long getCatalogId() {
     return catalogId;
   }
@@ -66,6 +69,10 @@ public class PolarisEntityActiveRecord {
     return subTypeCode;
   }
 
+  public String getLocation() {
+    return location;
+  }
+
   public PolarisEntitySubType getSubType() {
     return PolarisEntitySubType.fromCode(this.subTypeCode);
   }
@@ -77,13 +84,15 @@ public class PolarisEntityActiveRecord {
       @JsonProperty("parentId") long parentId,
       @JsonProperty("name") String name,
       @JsonProperty("typeCode") int typeCode,
-      @JsonProperty("subTypeCode") int subTypeCode) {
+      @JsonProperty("subTypeCode") int subTypeCode,
+      @JsonProperty("location") String location) {
     this.catalogId = catalogId;
     this.id = id;
     this.parentId = parentId;
     this.name = name;
     this.typeCode = typeCode;
     this.subTypeCode = subTypeCode;
+    this.location = location;
   }
 
   /** Constructor to create the object with provided entity */
@@ -94,6 +103,7 @@ public class PolarisEntityActiveRecord {
     this.typeCode = entity.getTypeCode();
     this.name = entity.getName();
     this.subTypeCode = entity.getSubTypeCode();
+    this.location = entity.getLocation();
   }
 
   @Override
@@ -106,12 +116,13 @@ public class PolarisEntityActiveRecord {
         && parentId == that.parentId
         && typeCode == that.typeCode
         && subTypeCode == that.subTypeCode
-        && Objects.equals(name, that.name);
+        && Objects.equals(name, that.name)
+        && Objects.equals(location, that.location);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(catalogId, id, parentId, name, typeCode, subTypeCode);
+    return Objects.hash(catalogId, id, parentId, name, typeCode, subTypeCode, location);
   }
 
   @Override
@@ -130,6 +141,9 @@ public class PolarisEntityActiveRecord {
         + typeCode
         + ", subTypeCode="
         + subTypeCode
+        + ", location='"
+        + location
+        + '\''
         + '}';
   }
 }

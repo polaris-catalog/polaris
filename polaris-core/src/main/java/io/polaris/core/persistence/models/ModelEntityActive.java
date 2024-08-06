@@ -18,8 +18,10 @@ package io.polaris.core.persistence.models;
 import io.polaris.core.entity.PolarisEntityActiveRecord;
 import io.polaris.core.entity.PolarisEntitySubType;
 import io.polaris.core.entity.PolarisEntityType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
 /**
@@ -27,7 +29,9 @@ import jakarta.persistence.Table;
  * entity information with ENTITIES_ACTIVE table
  */
 @Entity
-@Table(name = "ENTITIES_ACTIVE")
+@Table(
+    name = "ENTITIES_ACTIVE",
+    indexes = {@Index(name = "idx_location", columnList = "location")})
 public class ModelEntityActive {
   // entity catalog id
   @Id private long catalogId;
@@ -46,6 +50,10 @@ public class ModelEntityActive {
 
   // code representing the subtype of that entity
   private int subTypeCode;
+
+  // location of the entity
+  @Column(nullable = true)
+  private String location;
 
   public long getCatalogId() {
     return catalogId;
@@ -73,6 +81,10 @@ public class ModelEntityActive {
 
   public int getSubTypeCode() {
     return subTypeCode;
+  }
+
+  public String getLocation() {
+    return location;
   }
 
   public PolarisEntitySubType getSubType() {
@@ -120,6 +132,11 @@ public class ModelEntityActive {
       return this;
     }
 
+    public Builder location(String location) {
+      entity.location = location;
+      return this;
+    }
+
     public ModelEntityActive build() {
       return entity;
     }
@@ -133,6 +150,7 @@ public class ModelEntityActive {
         .name(record.getName())
         .typeCode(record.getTypeCode())
         .subTypeCode(record.getSubTypeCode())
+        .location(record.getLocation())
         .build();
   }
 
@@ -142,6 +160,12 @@ public class ModelEntityActive {
     }
 
     return new PolarisEntityActiveRecord(
-        model.catalogId, model.id, model.parentId, model.name, model.typeCode, model.subTypeCode);
+        model.catalogId,
+        model.id,
+        model.parentId,
+        model.name,
+        model.typeCode,
+        model.subTypeCode,
+        model.location);
   }
 }
