@@ -21,7 +21,6 @@ import io.polaris.core.persistence.resolver.PolarisResolutionManifest;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,7 +84,7 @@ public class SqlliteCallContextCatalogFactory implements CallContextCatalogFacto
       // Ensure parent directories of metastore-state base directory exists.
       LOG.info("Creating metastore state directory: " + realmDir);
       try {
-        Path result = Files.createDirectories(FileSystems.getDefault().getPath(realmDir));
+        Files.createDirectories(FileSystems.getDefault().getPath(realmDir));
       } catch (IOException ioe) {
         throw new RuntimeException(ioe);
       }

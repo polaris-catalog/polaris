@@ -107,10 +107,9 @@ public class PolarisServiceImplIntegrationTest {
       response.readEntity(Catalogs.class).getCatalogs().stream()
           .forEach(
               catalog -> {
-                try (Response innerResponse =
-                    newRequest(
-                            "http://localhost:%d/api/management/v1/catalogs/" + catalog.getName())
-                        .delete()) {}
+                newRequest("http://localhost:%d/api/management/v1/catalogs/" + catalog.getName())
+                    .delete()
+                    .close();
               });
     }
     try (Response response = newRequest("http://localhost:%d/api/management/v1/principals").get()) {
@@ -120,11 +119,10 @@ public class PolarisServiceImplIntegrationTest {
                   !principal.getName().equals(PolarisEntityConstants.getRootPrincipalName()))
           .forEach(
               principal -> {
-                try (Response innerResponse =
-                    newRequest(
-                            "http://localhost:%d/api/management/v1/principals/"
-                                + principal.getName())
-                        .delete()) {}
+                newRequest(
+                        "http://localhost:%d/api/management/v1/principals/" + principal.getName())
+                    .delete()
+                    .close();
               });
     }
     try (Response response =
@@ -137,11 +135,11 @@ public class PolarisServiceImplIntegrationTest {
                       .equals(PolarisEntityConstants.getNameOfPrincipalServiceAdminRole()))
           .forEach(
               principalRole -> {
-                try (Response innerResponse =
-                    newRequest(
-                            "http://localhost:%d/api/management/v1/principal-roles/"
-                                + principalRole.getName())
-                        .delete()) {}
+                newRequest(
+                        "http://localhost:%d/api/management/v1/principal-roles/"
+                            + principalRole.getName())
+                    .delete()
+                    .close();
               });
     }
   }
@@ -212,21 +210,6 @@ public class PolarisServiceImplIntegrationTest {
 
   @Test
   public void testCreateCatalog() {
-    AwsStorageConfigInfo awsConfigModel =
-        AwsStorageConfigInfo.builder()
-            .setRoleArn("arn:aws:iam::123456789012:role/my-role")
-            .setExternalId("externalId")
-            .setUserArn("userArn")
-            .setStorageType(StorageConfigInfo.StorageTypeEnum.S3)
-            .setAllowedLocations(List.of("s3://my-old-bucket/path/to/data"))
-            .build();
-    Catalog catalog =
-        PolarisCatalog.builder()
-            .setType(Catalog.TypeEnum.INTERNAL)
-            .setName("my-catalog")
-            .setProperties(new CatalogProperties("s3://my-bucket/path/to/data"))
-            .setStorageConfigInfo(awsConfigModel)
-            .build();
     try (Response response =
         newRequest("http://localhost:%d/api/management/v1/catalogs")
             .post(

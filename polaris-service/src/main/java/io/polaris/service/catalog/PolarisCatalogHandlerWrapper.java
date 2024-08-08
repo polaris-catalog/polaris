@@ -46,7 +46,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.iceberg.BaseMetadataTable;
 import org.apache.iceberg.BaseTable;
-import org.apache.iceberg.BaseTransaction;
 import org.apache.iceberg.MetadataUpdate;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.SortOrder;
@@ -958,8 +957,6 @@ public class PolarisCatalogHandlerWrapper {
                   Transaction transaction =
                       Transactions.newTransaction(
                           change.identifier().toString(), ((BaseTable) table).operations());
-                  BaseTransaction.TransactionTable txTable =
-                      (BaseTransaction.TransactionTable) transaction.table();
                   CatalogHandlers.updateTable(baseCatalog, change.identifier(), change);
                   return transaction;
                 })

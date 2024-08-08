@@ -86,7 +86,7 @@ class InMemoryStorageIntegrationTest {
               }
             },
             Clock.systemUTC());
-    try (CallContext cc =
+    try (CallContext ignored =
         CallContext.setCurrentContext(CallContext.of(() -> "realm", polarisCallContext))) {
       Map<String, Map<PolarisStorageActions, PolarisStorageIntegration.ValidationResult>> result =
           storage.validateAccessToLocations(
