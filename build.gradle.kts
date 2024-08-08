@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import java.net.URI
+
 buildscript {
   repositories { maven { url = java.net.URI("https://plugins.gradle.org/m2/") } }
   dependencies {
@@ -38,17 +40,24 @@ if (System.getProperty("idea.sync.active").toBoolean()) {
   ideaDir.file(".name").asFile.writeText(ideName)
 
   val icon = ideaDir.file("icon.png").asFile
-  if (!icon.exists()) {
-    val img =
-      java.net
-        .URI(
-          "https://raw.githubusercontent.com/polaris-catalog/polaris/main/docs/img/logos/polaris-brandmark.png"
-        )
-        .toURL()
-        .openConnection()
-        .getInputStream()
-        .use { inp -> inp.readAllBytes() }
-    ideaDir.file("icon.png").asFile.outputStream().use { out -> out.write(img) }
+  if (!icon.exists() && !gradle.startParameter.isOffline) {
+    try {
+      val img =
+        URI(
+            "https://raw.githubusercontent.com/polaris-catalog/polaris/main/docs/img/logos/polaris-brandmark.png"
+          )
+          .toURL()
+          .openConnection()
+          .getInputStream()
+          .use { inp -> inp.readAllBytes() }
+      ideaDir.file("icon.png").asFile.outputStream().use { out -> out.write(img) }
+    } catch (e: Exception) {
+      // Don't fail the build, if there are issues downloading the igon
+      project.logger.lifecycle(
+        "Could not download the Polaris logo for IntelliJ, error was '{}', continuing the build...",
+        e.toString()
+      )
+    }
   }
 }
 
