@@ -52,7 +52,7 @@ if (System.getProperty("idea.sync.active").toBoolean()) {
           .use { inp -> inp.readAllBytes() }
       ideaDir.file("icon.png").asFile.outputStream().use { out -> out.write(img) }
     } catch (e: Exception) {
-      // Don't fail the build, if there are issues downloading the igon
+      // Don't fail the build, if there are issues downloading the icon
       project.logger.lifecycle(
         "Could not download the Polaris logo for IntelliJ, error was '{}', continuing the build...",
         e.toString()
