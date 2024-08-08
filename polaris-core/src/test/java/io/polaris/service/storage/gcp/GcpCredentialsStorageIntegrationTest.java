@@ -49,30 +49,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Assumptions;
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
-import org.assertj.core.util.Strings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class GcpCredentialsStorageIntegrationTest {
 
   private final String gcsServiceKeyJsonFileLocation =
       System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
 
-  private final Logger LOGGER = LoggerFactory.getLogger(GcpCredentialsStorageIntegrationTest.class);
-
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  public void testSubscope(boolean allowedListAction) throws IOException {
-    if (Strings.isNullOrEmpty(gcsServiceKeyJsonFileLocation)) {
-      LOGGER.debug(
-          "Environment variable GOOGLE_APPLICATION_CREDENTIALS not exits, skip test "
-              + getClass().getName());
-      return;
-    }
+  public void testSubscope(boolean allowedListAction) throws Exception {
+    Assumptions.assumeThat(gcsServiceKeyJsonFileLocation)
+        .describedAs("Environment variable GOOGLE_APPLICATION_CREDENTIALS not exits")
+        .isNotNull()
+        .isNotEmpty();
     List<String> allowedRead =
         Arrays.asList(
             "gs://sfc-dev1-regtest/polaris-test/subscoped-test/read1/",
@@ -81,57 +75,60 @@ class GcpCredentialsStorageIntegrationTest {
         Arrays.asList(
             "gs://sfc-dev1-regtest/polaris-test/subscoped-test/write1/",
             "gs://sfc-dev1-regtest/polaris-test/subscoped-test/write2/");
-    Storage storageClient = setupStorageClient(allowedRead, allowedWrite, allowedListAction);
-    BlobInfo blobInfoGoodWrite =
-        createStorageBlob("sfc-dev1-regtest", "polaris-test/subscoped-test/write1/", "file.txt");
-    BlobInfo blobInfoBad =
-        createStorageBlob("sfc-dev1-regtest", "polaris-test/subscoped-test/write3/", "file.txt");
-    BlobInfo blobInfoGoodRead =
-        createStorageBlob("sfc-dev1-regtest", "polaris-test/subscoped-test/read1/", "file.txt");
-    final byte[] fileContent = "hello-polaris".getBytes();
-    // GOOD WRITE
-    Assertions.assertThatNoException()
-        .isThrownBy(() -> storageClient.create(blobInfoGoodWrite, fileContent));
-
-    // BAD WROTE
-    Assertions.assertThatThrownBy(() -> storageClient.create(blobInfoBad, fileContent))
-        .isInstanceOf(StorageException.class);
-
-    Assertions.assertThatNoException()
-        .isThrownBy(() -> storageClient.get(blobInfoGoodRead.getBlobId()));
-    Assertions.assertThatThrownBy(() -> storageClient.get(blobInfoBad.getBlobId()))
-        .isInstanceOf(StorageException.class);
-
-    // LIST
-    if (allowedListAction) {
+    try (Storage storageClient = setupStorageClient(allowedRead, allowedWrite, allowedListAction)) {
+      BlobInfo blobInfoGoodWrite =
+          createStorageBlob("sfc-dev1-regtest", "polaris-test/subscoped-test/write1/", "file.txt");
+      BlobInfo blobInfoBad =
+          createStorageBlob("sfc-dev1-regtest", "polaris-test/subscoped-test/write3/", "file.txt");
+      BlobInfo blobInfoGoodRead =
+          createStorageBlob("sfc-dev1-regtest", "polaris-test/subscoped-test/read1/", "file.txt");
+      final byte[] fileContent = "hello-polaris".getBytes();
+      // GOOD WRITE
       Assertions.assertThatNoException()
-          .isThrownBy(
-              () ->
-                  storageClient.list(
-                      "sfc-dev1-regtest",
-                      Storage.BlobListOption.prefix("polaris-test/subscoped-test/read1/")));
-    } else {
-      Assertions.assertThatThrownBy(
-              () ->
-                  storageClient.list(
-                      "sfc-dev1-regtest",
-                      Storage.BlobListOption.prefix("polaris-test/subscoped-test/read1/")))
+          .isThrownBy(() -> storageClient.create(blobInfoGoodWrite, fileContent));
+
+      // BAD WRITE
+      Assertions.assertThatThrownBy(() -> storageClient.create(blobInfoBad, fileContent))
           .isInstanceOf(StorageException.class);
+
+      Assertions.assertThatNoException()
+          .isThrownBy(() -> storageClient.get(blobInfoGoodRead.getBlobId()));
+      Assertions.assertThatThrownBy(() -> storageClient.get(blobInfoBad.getBlobId()))
+          .isInstanceOf(StorageException.class);
+
+      // LIST
+      if (allowedListAction) {
+        Assertions.assertThatNoException()
+            .isThrownBy(
+                () ->
+                    storageClient.list(
+                        "sfc-dev1-regtest",
+                        Storage.BlobListOption.prefix("polaris-test/subscoped-test/read1/")));
+      } else {
+        Assertions.assertThatThrownBy(
+                () ->
+                    storageClient.list(
+                        "sfc-dev1-regtest",
+                        Storage.BlobListOption.prefix("polaris-test/subscoped-test/read1/")))
+            .isInstanceOf(StorageException.class);
+      }
+      // DELETE
+      List<String> allowedWrite2 =
+          Arrays.asList(
+              "gs://sfc-dev1-regtest/polaris-test/subscoped-test/write2/",
+              "gs://sfc-dev1-regtest/polaris-test/subscoped-test/write3/");
+      try (Storage clientForDelete =
+          setupStorageClient(List.of(), allowedWrite2, allowedListAction)) {
+
+        // can not delete because it is not in allowed write path for this client
+        Assertions.assertThatThrownBy(() -> clientForDelete.delete(blobInfoGoodWrite.getBlobId()))
+            .isInstanceOf(StorageException.class);
+
+        // good to delete allowed location
+        Assertions.assertThatNoException()
+            .isThrownBy(() -> storageClient.delete(blobInfoGoodWrite.getBlobId()));
+      }
     }
-    // DELETE
-    List<String> allowedWrite2 =
-        Arrays.asList(
-            "gs://sfc-dev1-regtest/polaris-test/subscoped-test/write2/",
-            "gs://sfc-dev1-regtest/polaris-test/subscoped-test/write3/");
-    Storage clientForDelete = setupStorageClient(List.of(), allowedWrite2, allowedListAction);
-
-    // can not delete because it is not in allowed write path for this client
-    Assertions.assertThatThrownBy(() -> clientForDelete.delete(blobInfoGoodWrite.getBlobId()))
-        .isInstanceOf(StorageException.class);
-
-    // good to delete allowed location
-    Assertions.assertThatNoException()
-        .isThrownBy(() -> storageClient.delete(blobInfoGoodWrite.getBlobId()));
   }
 
   private Storage setupStorageClient(
