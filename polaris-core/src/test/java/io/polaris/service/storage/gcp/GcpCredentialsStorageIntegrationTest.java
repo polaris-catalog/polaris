@@ -87,7 +87,7 @@ class GcpCredentialsStorageIntegrationTest {
       Assertions.assertThatNoException()
           .isThrownBy(() -> storageClient.create(blobInfoGoodWrite, fileContent));
 
-      // BAD WROTE
+      // BAD WRITE
       Assertions.assertThatThrownBy(() -> storageClient.create(blobInfoBad, fileContent))
           .isInstanceOf(StorageException.class);
 
