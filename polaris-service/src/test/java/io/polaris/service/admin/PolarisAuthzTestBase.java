@@ -42,7 +42,6 @@ import io.polaris.core.entity.PrincipalEntity;
 import io.polaris.core.entity.PrincipalRoleEntity;
 import io.polaris.core.persistence.PolarisEntityManager;
 import io.polaris.core.persistence.PolarisMetaStoreManager;
-import io.polaris.core.persistence.PolarisTreeMapStore;
 import io.polaris.core.persistence.resolver.PolarisResolutionManifest;
 import io.polaris.core.storage.cache.StorageCredentialCache;
 import io.polaris.service.catalog.BasePolarisCatalog;
@@ -142,7 +141,6 @@ public abstract class PolarisAuthzTestBase {
   @SuppressWarnings("unchecked")
   public void before() {
     PolarisDiagnostics diagServices = new PolarisDefaultDiagServiceImpl();
-    PolarisTreeMapStore backingStore = new PolarisTreeMapStore(diagServices);
     InMemoryPolarisMetaStoreManagerFactory managerFactory =
         new InMemoryPolarisMetaStoreManagerFactory();
     managerFactory.setStorageIntegrationProvider(

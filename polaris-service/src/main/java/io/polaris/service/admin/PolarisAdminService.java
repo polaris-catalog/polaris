@@ -1569,9 +1569,8 @@ public class PolarisAdminService {
         PolarisAuthorizableOperation.LIST_ASSIGNEE_PRINCIPAL_ROLES_FOR_CATALOG_ROLE;
     authorizeBasicCatalogRoleOperationOrThrow(op, catalogName, catalogRoleName);
 
-    PolarisEntity catalogEntity =
-        findCatalogByName(catalogName)
-            .orElseThrow(() -> new NotFoundException("Parent catalog %s not found", catalogName));
+    findCatalogByName(catalogName)
+        .orElseThrow(() -> new NotFoundException("Parent catalog %s not found", catalogName));
     PolarisEntity catalogRoleEntity =
         findCatalogRoleByName(catalogName, catalogRoleName)
             .orElseThrow(() -> new NotFoundException("CatalogRole %s not found", catalogRoleName));
@@ -1699,9 +1698,8 @@ public class PolarisAdminService {
       TableIdentifier identifier,
       PolarisEntitySubType subType,
       PolarisPrivilege privilege) {
-    PolarisEntity catalogEntity =
-        findCatalogByName(catalogName)
-            .orElseThrow(() -> new NotFoundException("Parent catalog %s not found", catalogName));
+    findCatalogByName(catalogName)
+        .orElseThrow(() -> new NotFoundException("Parent catalog %s not found", catalogName));
     PolarisEntity catalogRoleEntity =
         findCatalogRoleByName(catalogName, catalogRoleName)
             .orElseThrow(() -> new NotFoundException("CatalogRole %s not found", catalogRoleName));
@@ -1738,9 +1736,8 @@ public class PolarisAdminService {
       TableIdentifier identifier,
       PolarisEntitySubType subType,
       PolarisPrivilege privilege) {
-    PolarisEntity catalogEntity =
-        findCatalogByName(catalogName)
-            .orElseThrow(() -> new NotFoundException("Parent catalog %s not found", catalogName));
+    findCatalogByName(catalogName)
+        .orElseThrow(() -> new NotFoundException("Parent catalog %s not found", catalogName));
     PolarisEntity catalogRoleEntity =
         findCatalogRoleByName(catalogName, catalogRoleName)
             .orElseThrow(() -> new NotFoundException("CatalogRole %s not found", catalogRoleName));
