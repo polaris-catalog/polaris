@@ -30,5 +30,5 @@ public sealed interface AuthorizationIntent
         PrivilegeGrantAuthorizationIntent,
         RootPrivilegeGrantAuthorizationIntent {
 
-  @NonNull PolarisAuthorizableOperation getOperation();
+  @NonNull PolarisAuthorizableOperation operation();
 }
