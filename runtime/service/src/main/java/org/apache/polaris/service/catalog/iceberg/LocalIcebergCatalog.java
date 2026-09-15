@@ -321,6 +321,11 @@ public class LocalIcebergCatalog extends BaseMetastoreViewCatalog
         IcebergPropertiesValidation.determineFileIOClassName(
             realmConfig, properties, storageConfigurationInfo);
 
+    // Kept beside the storage-type gate as defence in depth; the catalog handlers run the same
+    // check first.
+    IcebergPropertiesValidation.validateS3CredentialIssuerAvailable(
+        realmConfig, storageConfigurationInfo);
+
     if (ioImplClassName == null) {
       LOGGER.warn(
           "Cannot resolve property '{}' for null storageConfiguration.",
